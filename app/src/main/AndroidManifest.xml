@@ -4,6 +4,7 @@
     package="com.app.lockapp4">
 
     <application
+        android:name="com.app.lockapp4.framework.app.LockAppApplication"
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"

@@ -110,4 +110,6 @@ dependencies {
     implementation "com.google.dagger:hilt-android:$hiltVer"
     implementation "androidx.hilt:hilt-navigation-compose:1.0.0"
     kapt "com.google.dagger:hilt-android-compiler:$hiltVer"
+
+    implementation 'com.jakewharton.timber:timber:4.7.1'
 }

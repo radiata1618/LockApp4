@@ -1,4 +1,4 @@
-package com.app.lockapp4.ui.theme
+package com.app.lockapp4.presentation.ui
 
 import androidx.compose.material3.Typography
 import androidx.compose.ui.text.TextStyle
