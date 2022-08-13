@@ -12,7 +12,7 @@ import androidx.navigation.NavController
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainPage(
-    viewModel: LockTimeViewModel,
+    viewModel: LockTimeViewModel = hiltViewModel(),
     navController: NavController) {
 
 

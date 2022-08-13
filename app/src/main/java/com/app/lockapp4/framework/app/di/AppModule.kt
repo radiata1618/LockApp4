@@ -25,31 +25,22 @@ import javax.inject.Singleton
 @InstallIn(SingletonComponent::class)
 object AppModule {
 
-    @Provides
-    @Singleton
-    fun provideLockTimeDatabase(
-        app: Application
-    ): LockTimeDatabase {
-        return Room.databaseBuilder(
-            app,
-            LockTimeDatabase::class.java,
-            "mainDatabase"
-        ).build()
-    }
-
-    @Provides
-    @Singleton
-    fun provideLockTimeDao(database: LockTimeDatabase): LockTimeDao {
-        return database.lockTimeDatabaseDao
-    }
-
 //    @Provides
 //    @Singleton
-//    fun provideLockTimeDao(app: Application): LockTimeDao {
+//    fun provideLockTimeDatabase(
+//        app: Application
+//    ): LockTimeDatabase {
 //        return Room.databaseBuilder(
 //            app,
 //            LockTimeDatabase::class.java,
 //            "mainDatabase"
-//        ).build().lockTimeDatabaseDao
+//        ).build()
 //    }
+//
+//    @Provides
+//    @Singleton
+//    fun provideLockTimeDao(database: LockTimeDatabase): LockTimeDao {
+//        return database.lockTimeDatabaseDao
+//    }
+
 }
