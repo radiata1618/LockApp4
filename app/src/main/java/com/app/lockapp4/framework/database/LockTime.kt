@@ -1,4 +1,4 @@
-
+package com.app.lockapp4.framework.database
 
 import android.os.Parcelable
 import androidx.room.Entity

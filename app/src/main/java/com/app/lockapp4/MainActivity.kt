@@ -1,22 +1,22 @@
 package com.app.lockapp4
 
-import android.app.Application
+import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
+import android.provider.Settings
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.annotation.Nullable
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.app.lockapp4.presentation.LockTimeViewModel
 import com.app.lockapp4.presentation.MainPage
 import com.app.lockapp4.presentation.ui.LockApp4Theme
 import dagger.hilt.android.AndroidEntryPoint
@@ -28,7 +28,55 @@ class MainActivity : ComponentActivity() {
         setContent {
             MainScreenUI()
         }
+
+        requestPermission()
     }
+
+    override fun onDestroy() {
+        Log.d("■■■■■■■■■■■", "onDestroyが呼び出される")
+        super.onDestroy()
+//        setRestartPlan(applicationContext)
+//        restartApp(applicationContext,)
+    }
+
+    override fun onStop() {
+        Log.d("■■■■■■■■■■■", "onStopが呼び出される")
+        super.onStop()
+//        setRestartPlan(applicationContext)
+//        restartApp(applicationContext)
+    }
+
+    private val REQUEST_PERMISSION_CODE = 1
+
+    // SYSTEM_ALERT_WINDOWが許可されているかのチェック
+    fun isGranted(): Boolean {
+        return Settings.canDrawOverlays(this)
+    }
+
+    // SYSTEM_ALERT_WINDOWの許可をリクエストする
+    private fun requestPermission() {
+        if (Settings.canDrawOverlays(this)) {
+            // 許可されたときの処理
+        } else {
+            val uri: Uri = Uri.parse("package:$packageName")
+            val intent: Intent = Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, uri)
+            startActivityForResult(intent, REQUEST_PERMISSION_CODE)
+        }
+    }
+
+    // 許可されたかの確認は、onActivityResultでチェックする
+    override fun onActivityResult(requestCode: Int, resultCode: Int, @Nullable data: Intent?) {
+        if (requestCode == REQUEST_PERMISSION_CODE) {
+            if (Settings.canDrawOverlays(this)) {
+                // 許可されたときの処理
+            } else {
+                // 拒否されたときの処理
+            }
+        } else {
+            super.onActivityResult(requestCode, resultCode, data)
+        }
+    }
+
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
