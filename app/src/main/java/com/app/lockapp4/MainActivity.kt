@@ -35,15 +35,15 @@ class MainActivity : ComponentActivity() {
     override fun onDestroy() {
         Log.d("■■■■■■■■■■■", "onDestroyが呼び出される")
         super.onDestroy()
-//        setRestartPlan(applicationContext)
-//        restartApp(applicationContext,)
+        setRestartPlan(applicationContext)
+        restartApp(applicationContext,)
     }
 
     override fun onStop() {
         Log.d("■■■■■■■■■■■", "onStopが呼び出される")
         super.onStop()
-//        setRestartPlan(applicationContext)
-//        restartApp(applicationContext)
+        setRestartPlan(applicationContext)
+        restartApp(applicationContext)
     }
 
     private val REQUEST_PERMISSION_CODE = 1

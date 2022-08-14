@@ -19,7 +19,7 @@ fun HeaderInfo(
 
     Timber.d("■■■■■■■■■■■■■■■■■■■■■■■■■■■HeaderInfoはじめ")
 
-    if (viewModel.unLockedTimeByScheduling != "") {
+    if (viewModel.isScheduledLockedCompanion) {
 
             Text(text = stringIsLocked, fontSize = 30.sp)
             Text(text = "解除日時：${viewModel.unLockedTimeByScheduling}")

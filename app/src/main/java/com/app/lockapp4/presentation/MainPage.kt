@@ -37,6 +37,7 @@ fun MainPage(
     navController: NavController) {
 
     viewModel.makeInitialAllData()
+    viewModel.getNextToTimeIfScheduledLocking()
     val context = LocalContext.current
     val instantLockData = viewModel.instantLock.collectAsState(emptyList()).value
 
@@ -50,6 +51,8 @@ fun MainPage(
             Text(text = "Instant Lock")
             Text(text = if(instantLockData.isEmpty()){stringIsUnlocked}else{stringIsLocked})
             Row {
+                MyNumberField(navController=navController)
+                Text(text = "分")
                 Button(
                     onClick = {
                         viewModel.insertInstantLock()
@@ -57,7 +60,6 @@ fun MainPage(
                 ) {
                     Text(text = "Lock")
                 }
-                MyNumberField(navController=navController)
             }
 
             Button(
