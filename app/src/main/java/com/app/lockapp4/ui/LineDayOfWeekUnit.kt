@@ -33,7 +33,7 @@ import kotlinx.coroutines.launch
 @Composable
 fun LineDayOfWeekUnit(
     lockTimeData: LockTime,
-    viewModel: MainViewModel= hiltViewModel()
+    viewModel: MainViewModel = hiltViewModel()
 ) {
     // Value for storing time as a string
     val mTime = remember { mutableStateOf("") }
@@ -63,9 +63,7 @@ fun LineDayOfWeekUnit(
                     val fromTimePickerDialog = TimePickerDialog(
                         context,
                         { _, mHour: Int, mMinute: Int ->
-                            GlobalScope.launch(Dispatchers.IO) {
-                                viewModel.lockTimeDaoForUse.updateFromTime(lockTimeData.dayId, mHour, mMinute)
-                            }
+                            viewModel.updateFromTime(lockTimeData.dayId, mHour, mMinute)
                         },
                         lockTimeData.fromTimeHour, lockTimeData.fromTimeMinute, false
                     )
@@ -88,9 +86,7 @@ fun LineDayOfWeekUnit(
                     val toTimePickerDialog = TimePickerDialog(
                         context,
                         { _, mHour: Int, mMinute: Int ->
-                            GlobalScope.launch(Dispatchers.IO) {
-                                viewModel.lockTimeDaoForUse.updateToTime(lockTimeData.dayId, mHour, mMinute)
-                            }
+                            viewModel.updateToTime(lockTimeData.dayId, mHour, mMinute)
                         },
                         lockTimeData.toTimeHour, lockTimeData.toTimeMinute, false
                     )
@@ -108,8 +104,10 @@ fun LineDayOfWeekUnit(
 }
 
 @Composable
-fun DayOfWeekButtonUnit(lockTime: LockTime,
-                        viewModel: MainViewModel= hiltViewModel()) {
+fun DayOfWeekButtonUnit(
+    lockTime: LockTime,
+    viewModel: MainViewModel = hiltViewModel()
+) {
     val context = LocalContext.current
 
     Surface(
@@ -118,9 +116,7 @@ fun DayOfWeekButtonUnit(lockTime: LockTime,
             .toggleable(
                 value = lockTime.enableLock,
                 onValueChange = {
-                    GlobalScope.launch(Dispatchers.IO) {
-                        viewModel.lockTimeDaoForUse.updateEnable(lockTime)
-                    }
+                    viewModel.updateEnable(lockTime)
                 }
             ),
         shape = CircleShape,

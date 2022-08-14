@@ -8,10 +8,9 @@ import kotlinx.parcelize.Parcelize
 @Parcelize
 @Entity(tableName = "instantLock")
 data class InstantLock (
-    @PrimaryKey val id: Int,
+    @PrimaryKey(autoGenerate = true)  val id: Int,
     val startTimeInLong: Long,
     val durationTimeInLong: Long,
-    val endTimeInLong: Long,
 ): Parcelable
 
 

@@ -147,4 +147,7 @@ dependencies {
 
 
     implementation 'com.jakewharton.timber:timber:4.7.1'
+
+    //NumberPicker
+    implementation 'com.chillibits:composenumberpicker:1.1.0'
 }
