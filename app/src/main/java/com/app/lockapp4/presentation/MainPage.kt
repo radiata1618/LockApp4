@@ -1,8 +1,6 @@
 package com.app.lockapp4.presentation
 
 import android.annotation.SuppressLint
-import android.widget.NumberPicker
-import android.widget.Toast
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -24,21 +22,16 @@ import com.app.lockapp4.framework.utl.stringIsUnlocked
 import com.app.lockapp4.ui.HeaderInfo
 import com.app.lockapp4.ui.LinesDayOfWeek
 import com.app.lockapp4.ui.MyNumberField
-import com.chillibits.composenumberpicker.HorizontalNumberPicker
-import com.chillibits.composenumberpicker.VerticalNumberPicker
-import timber.log.Timber
 
 //https://blog.mokelab.com/
-@SuppressLint("CoroutineCreationDuringComposition")
+@SuppressLint("CoroutineCreationDuringComposition", "UnusedMaterial3ScaffoldPaddingParameter")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainPage(
     viewModel: MainViewModel = hiltViewModel(),
     navController: NavController) {
 
-    viewModel.makeInitialAllData()
-    viewModel.getNextToTimeIfScheduledLocking()
-    val context = LocalContext.current
+    viewModel.initialProcess()
     val instantLockData = viewModel.instantLock.collectAsState(emptyList()).value
 
     Scaffold(floatingActionButton = {  }) {

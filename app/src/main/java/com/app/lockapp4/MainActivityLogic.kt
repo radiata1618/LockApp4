@@ -120,3 +120,39 @@ fun setRestartPlan(context: Context) {
         }
     }
 }
+
+
+fun deleteInstantLockSchedule(context: Context) {
+
+//    明示的なBroadCast
+    val intent = Intent(
+        context,
+        AlarmBroadcastReceiver::class.java
+    )
+    val pending: PendingIntent = PendingIntent.getBroadcast(
+        context, 1, intent,
+        PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+    )
+
+    // アラームをセットする
+    val am: AlarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+
+    GlobalScope.launch(Dispatchers.IO) {
+        val nextLockTime = getLockTimeDao(context).getNextFromTime()
+        if (nextLockTime != null) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                Log.d("■■■■■■■■■■■", "★routeA★")
+                am.setExactAndAllowWhileIdle(
+                    AlarmManager.RTC_WAKEUP,
+                    nextLockTime.timeInMillis,
+                    pending
+                )
+//                    am.setRepeating(AlarmManager.RTC_WAKEUP,calendar.timeInMillis+5000, 5000,pending)
+            } else {
+                Log.d("■■■■■■■■■■■", "routeB")
+                am.setExact(AlarmManager.RTC_WAKEUP, nextLockTime.timeInMillis, pending)
+            }
+
+        }
+    }
+}

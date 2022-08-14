@@ -46,6 +46,10 @@ interface LockTimeDao {
 
         var lockTimeDataYesterday = getLockTime(dayOfWeekYesterday)
 
+        if(lockTimeDataYesterday==null){
+            return null
+        }
+
         var tmpBoolean=false
         //前日チェック
         if (lockTimeDataYesterday.enableLock) {//有効なスケジュール

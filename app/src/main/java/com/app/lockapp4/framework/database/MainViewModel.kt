@@ -12,13 +12,14 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import timber.log.Timber
+import java.util.*
 import javax.inject.Inject
 
 @HiltViewModel
 class MainViewModel @Inject constructor(
-lockTimeDao: LockTimeDao,
-instantLockDao: InstantLockDao,
-) : ViewModel(){
+    lockTimeDao: LockTimeDao,
+    instantLockDao: InstantLockDao,
+) : ViewModel() {
 
     var lockTimes = lockTimeDao.getAllFlow()
     var instantLock = instantLockDao.getAllFlow()
@@ -27,19 +28,36 @@ instantLockDao: InstantLockDao,
     var unLockedTimeByScheduling by mutableStateOf("")
     var instantLockTimeOnScreen by mutableStateOf(1)
 
-    private var lockTimeDaoForUse=lockTimeDao
-    private var instantLockDaoForUse=instantLockDao
+    private var lockTimeDaoForUse = lockTimeDao
+    private var instantLockDaoForUse = instantLockDao
 
-    fun makeInitialAllData() {
+    fun initialProcess() {
         GlobalScope.launch(Dispatchers.IO) {
             val lockData = lockTimeDaoForUse.getAll()
             if (lockData.isEmpty()) {
                 lockTimeDaoForUse.insertAllDefaultData()
             }
+
+            var instantLockList =instantLockDaoForUse.getAll()
+            if(instantLockList.isNotEmpty()){
+
+                val now = Calendar.getInstance()
+
+                val endTime = Calendar.getInstance()
+                val date = Date(instantLockList[0].startTimeInLong)
+                endTime.time = date
+                endTime.add(Calendar.MINUTE,instantLockList[0].durationTimeInLong.toInt())
+
+                if(now!!.after(endTime!!)){
+
+                    instantLockDaoForUse.deleteAll()
+
+                }
+            }
         }
     }
 
-    fun updateEnable(lockTime : LockTime):Boolean{
+    fun updateEnable(lockTime: LockTime): Boolean {
         GlobalScope.launch(Dispatchers.IO) {
             lockTimeDaoForUse.updateEnable(lockTime)
             getNextToTimeIfScheduledLocking()
@@ -47,65 +65,69 @@ instantLockDao: InstantLockDao,
         return true
     }
 
-    fun insertInstantLock(){
+    fun insertInstantLock() {
         val now = Calendar.getInstance()
 
         val endTime = Calendar.getInstance()
-        endTime.add(Calendar.MINUTE,instantLockTimeOnScreen)
+        endTime.add(Calendar.MINUTE, instantLockTimeOnScreen)
 
         GlobalScope.launch(Dispatchers.IO) {
-            instantLockDaoForUse.insert(InstantLock(0,now.timeInMillis,instantLockTimeOnScreen.toLong()))
+            instantLockDaoForUse.insert(
+                InstantLock(
+                    0,
+                    now.timeInMillis,
+                    instantLockTimeOnScreen.toLong()
+                )
+            )
         }
 
     }
-    fun deleteInstantLock(){
+
+    fun deleteInstantLock() {
         GlobalScope.launch(Dispatchers.IO) {
             instantLockDaoForUse.deleteAll()
         }
 
     }
 
-    fun updateToTime(dayId:Int, mHour:Int, mMinute:Int){
+    fun updateToTime(dayId: Int, mHour: Int, mMinute: Int) {
         GlobalScope.launch(Dispatchers.IO) {
             lockTimeDaoForUse.updateToTime(dayId, mHour, mMinute)
             getNextToTimeIfScheduledLocking()
         }
     }
 
-    fun updateFromTime(dayId:Int, mHour:Int, mMinute:Int){
+    fun updateFromTime(dayId: Int, mHour: Int, mMinute: Int) {
         GlobalScope.launch(Dispatchers.IO) {
             lockTimeDaoForUse.updateFromTime(dayId, mHour, mMinute)
             getNextToTimeIfScheduledLocking()
         }
     }
 
-    fun getNextToTimeIfScheduledLocking(){
-        GlobalScope.launch(Dispatchers.IO) {
-            val unlockedTime = lockTimeDaoForUse.getNextToTimeIfScheduledLocking()
+    private fun getNextToTimeIfScheduledLocking() {
 
+        val unlockedTime = lockTimeDaoForUse.getNextToTimeIfScheduledLocking()
+
+        GlobalScope.launch(Dispatchers.Main) {
             Timber.d("■■■■■■■■■■■■■■■■■■■■■■■■■■■getNextToTimeIfScheduledLocking はじめ")
 
             if (unlockedTime != null) {
                 val tmpUnLockedTimeByScheduling =
                     SimpleDateFormat("yyyy年MM月dd日 HH:mm").format(unlockedTime.time)
-                if(tmpUnLockedTimeByScheduling!=unLockedTimeByScheduling){
+                if (tmpUnLockedTimeByScheduling != unLockedTimeByScheduling) {
                     Timber.d("■■■■■■■■■■■■■■■■■■■■■■■■■■■isScheduledLockedCompanionをTrueにする")
-                    unLockedTimeByScheduling=tmpUnLockedTimeByScheduling
+                    unLockedTimeByScheduling = tmpUnLockedTimeByScheduling
                     isScheduledLockedCompanion = true
                 }
 
             } else {
 
-                if(unLockedTimeByScheduling!=""){
+                if (unLockedTimeByScheduling != "") {
                     Timber.d("■■■■■■■■■■■■■■■■■■■■■■■■■■■isScheduledLockedCompanionをfalseにする")
                     unLockedTimeByScheduling = ""
                     isScheduledLockedCompanion = false
                 }
             }
-
         }
     }
-
-
-
 }
