@@ -1,4 +1,4 @@
-package com.app.lockapp4.presentation.ui
+package com.app.lockapp4.presentation.theme
 
 import android.app.Activity
 import android.os.Build

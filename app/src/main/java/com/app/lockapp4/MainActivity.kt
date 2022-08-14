@@ -18,7 +18,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.app.lockapp4.presentation.MainPage
-import com.app.lockapp4.presentation.ui.LockApp4Theme
+import com.app.lockapp4.presentation.theme.LockApp4Theme
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint

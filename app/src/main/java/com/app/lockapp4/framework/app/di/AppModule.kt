@@ -7,7 +7,8 @@ import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.room.Room
 import com.app.lockapp4.framework.database.LockTimeDao
-import com.app.lockapp4.framework.database.LockTimeDatabase
+import com.app.lockapp4.framework.database.AppDatabase
+import com.app.lockapp4.framework.database.InstantLockDao
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -27,20 +28,25 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideLockTimeDatabase(
+    fun provideAppDatabase(
         app: Application
-    ): LockTimeDatabase {
+    ): AppDatabase {
         return Room.databaseBuilder(
             app,
-            LockTimeDatabase::class.java,
+            AppDatabase::class.java,
             "mainDatabase"
         ).build()
     }
 
     @Provides
     @Singleton
-    fun provideLockTimeDao(database: LockTimeDatabase): LockTimeDao {
+    fun provideLockTimeDao(database: AppDatabase): LockTimeDao {
         return database.lockTimeDatabaseDao
     }
 
+    @Provides
+    @Singleton
+    fun provideInstantLockDao(database: AppDatabase): InstantLockDao {
+        return database.instantLockDatabaseDao
+    }
 }
