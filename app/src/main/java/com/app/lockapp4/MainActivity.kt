@@ -17,7 +17,7 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.app.lockapp4.presentation.MainPage
+import com.app.lockapp4.ui.MainPage
 import com.app.lockapp4.presentation.theme.LockApp4Theme
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -88,7 +88,12 @@ fun MainScreenUI(){
 
         // A surface container using the 'background' color from the theme
         Surface(
-            modifier = Modifier.fillMaxSize(),
+            modifier = Modifier.fillMaxSize()
+//                .background(
+//                Brush.linearGradient(
+//                    colors=listOf(BackGroundBlueColor1, BackGroundBlueColor2)
+//                ))
+            ,
             color = MaterialTheme.colorScheme.background
         ) {
             NavHost(navController = navController, startDestination = "MainPage") {

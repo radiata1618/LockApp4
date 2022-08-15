@@ -1,6 +1,7 @@
 package com.app.lockapp4.ui
 
 import android.app.TimePickerDialog
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -25,6 +26,7 @@ import com.app.lockapp4.framework.database.MainViewModel
 import com.app.lockapp4.framework.utl.commonTranslateTimeIntToString
 import com.app.lockapp4.presentation.theme.CommonColorSecondary
 import com.app.lockapp4.presentation.theme.CommonColorTertiary
+import com.app.lockapp4.presentation.theme.DayColorList
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -35,31 +37,37 @@ fun LineDayOfWeekUnit(
     lockTimeData: LockTime,
     viewModel: MainViewModel = hiltViewModel()
 ) {
-    // Value for storing time as a string
-    val mTime = remember { mutableStateOf("") }
+
     val context = LocalContext.current
 
     Surface(
-        modifier = Modifier
-            .border(
-                width = 0.5.dp,
-                color = Color.DarkGray,
-                shape = RoundedCornerShape(20.dp)
-            )
+        modifier = Modifier.padding(all = 5.dp)
     ) {
         Row(
             modifier = Modifier
-                .padding(all = 16.dp)
                 .fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            Text(
-                modifier = Modifier.width(90.dp), text = lockTimeData.dayName
-            )
+            Box(
+                modifier = Modifier
+                    .size(40.dp, 40.dp)
+                    .background(
+                        color = Color(DayColorList[lockTimeData.dayId]),
+                        shape = CircleShape,
+                    ),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = lockTimeData.dayName,
+                    color = Color.White,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 22.sp
+                )
+            }
             Text(
                 modifier = Modifier.clickable {
-                    // Creating a TimePicker dialod
+
                     val fromTimePickerDialog = TimePickerDialog(
                         context,
                         { _, mHour: Int, mMinute: Int ->

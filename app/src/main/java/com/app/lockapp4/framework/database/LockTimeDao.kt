@@ -160,13 +160,13 @@ interface LockTimeDao {
     }
 
     fun insertAllDefaultData() {
-        insertDefaultDataUnit(1, "Sunday")
-        insertDefaultDataUnit(2, "Monday")
-        insertDefaultDataUnit(3, "Tuesday")
-        insertDefaultDataUnit(4, "Wednesday")
-        insertDefaultDataUnit(5, "Thursday")
-        insertDefaultDataUnit(6, "Friday")
-        insertDefaultDataUnit(7, "Saturday")
+        insertDefaultDataUnit(1, "日")
+        insertDefaultDataUnit(2, "月")
+        insertDefaultDataUnit(3, "火")
+        insertDefaultDataUnit(4, "水")
+        insertDefaultDataUnit(5, "木")
+        insertDefaultDataUnit(6, "金")
+        insertDefaultDataUnit(7, "土")
     }
 
     fun insertDefaultDataUnit(dayId: Int, dayName: String) {

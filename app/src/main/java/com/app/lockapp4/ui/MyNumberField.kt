@@ -1,6 +1,6 @@
 package com.app.lockapp4.ui
 
-import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.TextField
@@ -20,12 +20,12 @@ fun MyNumberField(
 ) {
 
     val change : (String) -> Unit = { it ->
-        viewModel.instantLockTimeOnScreen = if(it==""){0}else{it.toInt()}
+        viewModel.instantLockTimeOnScreenMinuteInInt = if(it==""){0}else{it.toInt()}
     }
 
     TextField(
-        value = viewModel.instantLockTimeOnScreen.toString(),
-        modifier = Modifier.width(100.dp),
+        value = viewModel.instantLockTimeOnScreenMinuteInInt.toString(),
+        modifier = Modifier.width(40.dp).height(50.dp),
         keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
         onValueChange = change
     )

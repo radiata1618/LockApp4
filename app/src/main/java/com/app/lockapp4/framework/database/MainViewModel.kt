@@ -1,12 +1,12 @@
 package com.app.lockapp4.framework.database
 
-import android.icu.text.SimpleDateFormat
+import android.content.Context
 import android.icu.util.Calendar
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
+import com.app.lockapp4.deleteInstantLockSchedule
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
@@ -24,9 +24,9 @@ class MainViewModel @Inject constructor(
     var lockTimes = lockTimeDao.getAllFlow()
     var instantLock = instantLockDao.getAllFlow()
 
-    var isScheduledLockedCompanion by mutableStateOf(false)
-    var unLockedTimeByScheduling by mutableStateOf("")
-    var instantLockTimeOnScreen by mutableStateOf(1)
+    var isLockedByScheduling by mutableStateOf(false)
+    var unLockedTimeBySchedulingInLong by mutableStateOf(0L)
+    var instantLockTimeOnScreenMinuteInInt by mutableStateOf(1)
 
     private var lockTimeDaoForUse = lockTimeDao
     private var instantLockDaoForUse = instantLockDao
@@ -65,21 +65,23 @@ class MainViewModel @Inject constructor(
         return true
     }
 
-    fun insertInstantLock() {
+    fun insertInstantLock(context: Context) {
         val now = Calendar.getInstance()
 
         val endTime = Calendar.getInstance()
-        endTime.add(Calendar.MINUTE, instantLockTimeOnScreen)
+        endTime.add(Calendar.MINUTE, instantLockTimeOnScreenMinuteInInt)
 
         GlobalScope.launch(Dispatchers.IO) {
             instantLockDaoForUse.insert(
                 InstantLock(
                     0,
                     now.timeInMillis,
-                    instantLockTimeOnScreen.toLong()
+                    instantLockTimeOnScreenMinuteInInt.toLong()
                 )
             )
         }
+
+        deleteInstantLockSchedule(context)
 
     }
 
@@ -112,20 +114,17 @@ class MainViewModel @Inject constructor(
             Timber.d("■■■■■■■■■■■■■■■■■■■■■■■■■■■getNextToTimeIfScheduledLocking はじめ")
 
             if (unlockedTime != null) {
-                val tmpUnLockedTimeByScheduling =
-                    SimpleDateFormat("yyyy年MM月dd日 HH:mm").format(unlockedTime.time)
-                if (tmpUnLockedTimeByScheduling != unLockedTimeByScheduling) {
+                val fromDBTimeInLong=unlockedTime!!.timeInMillis
+                if (fromDBTimeInLong != unLockedTimeBySchedulingInLong) {
                     Timber.d("■■■■■■■■■■■■■■■■■■■■■■■■■■■isScheduledLockedCompanionをTrueにする")
-                    unLockedTimeByScheduling = tmpUnLockedTimeByScheduling
-                    isScheduledLockedCompanion = true
+                    unLockedTimeBySchedulingInLong = fromDBTimeInLong
+                    isLockedByScheduling = true
                 }
-
             } else {
-
-                if (unLockedTimeByScheduling != "") {
+                if (unLockedTimeBySchedulingInLong != 0L) {
                     Timber.d("■■■■■■■■■■■■■■■■■■■■■■■■■■■isScheduledLockedCompanionをfalseにする")
-                    unLockedTimeByScheduling = ""
-                    isScheduledLockedCompanion = false
+                    unLockedTimeBySchedulingInLong = 0L
+                    isLockedByScheduling = false
                 }
             }
         }

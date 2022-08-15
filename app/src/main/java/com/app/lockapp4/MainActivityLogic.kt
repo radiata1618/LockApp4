@@ -13,6 +13,7 @@ import com.app.lockapp4.framework.database.AppDatabase
 import com.app.lockapp4.framework.database.InstantLockDao
 import com.app.lockapp4.framework.database.LockTimeDao
 import com.app.lockapp4.framework.utl.AlarmBroadcastReceiver
+import com.app.lockapp4.framework.utl.commonTranslateLongToCalendar
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -46,9 +47,7 @@ fun restartApp(context: Context) {
         }else{
             val now = Calendar.getInstance()
 
-            val endTime = Calendar.getInstance()
-            val date = Date(instantLockDataList[0].startTimeInLong)
-            endTime.time = date
+            val endTime = commonTranslateLongToCalendar(instantLockDataList[0].startTimeInLong)
             endTime.add(Calendar.MINUTE,instantLockDataList[0].durationTimeInLong.toInt())
 
             if(now.before(endTime)){
