@@ -1,7 +1,6 @@
 package com.app.lockapp4.framework.utl
 
 import android.icu.text.SimpleDateFormat
-import android.util.Log
 import java.util.*
 
 

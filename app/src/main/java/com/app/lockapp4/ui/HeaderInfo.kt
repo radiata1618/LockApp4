@@ -1,28 +1,24 @@
 package com.app.lockapp4.ui
 
-import android.icu.text.SimpleDateFormat
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.width
+import androidx.compose.material.MaterialTheme.colors
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.LockOpen
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Icon
-import androidx.compose.material3.Text
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.app.lockapp4.framework.database.MainViewModel
-import com.app.lockapp4.framework.utl.commonTranslateCalendarToStringYYYYMMDDHHMM
-import com.app.lockapp4.framework.utl.commonTranslateLongToCalendar
-import com.app.lockapp4.framework.utl.stringIsLocked
-import com.app.lockapp4.framework.utl.stringIsUnlocked
+import com.app.lockapp4.framework.utl.*
 import com.app.lockapp4.presentation.common.CommonVerticalGap16
 import java.util.*
 
@@ -63,23 +59,25 @@ fun HeaderInfo(
         LockIcon(true)
         CommonVerticalGap16()
         Text(text = stringIsLocked, fontSize = 36.sp)
+
         //解除時間の判定
         if(isLockedInstantly){
-
+            //スケジュールロックされているかつ、インスタントロックされている場合の解除時間
+            //日時を比べて先の方の時間を表示
             if(commonTranslateLongToCalendar(viewModel.unLockedTimeBySchedulingInLong).before(endTimeLockedInstantly)){
                 UnlockDateTime(endTimeLockedInstantly!!)
             }else{
-
                 UnlockDateTime(commonTranslateLongToCalendar(viewModel.unLockedTimeBySchedulingInLong))
             }
-            Text(text = "解除日時：${viewModel.unLockedTimeBySchedulingInLong}")
 
         }else{
-
-            Text(text = "解除日時：${viewModel.unLockedTimeBySchedulingInLong}")
+            //スケジュールロックされているかつ、インスタントロックされていない場合の解除時間
+            UnlockDateTime(commonTranslateLongToCalendar(viewModel.unLockedTimeBySchedulingInLong))
         }
         EmergencyButton()
     } else {
+
+        //スケジュールロックされていないかつ、インスタントロックされている場合の解除時間
         if(isLockedInstantly){
 
             LockIcon(true)
@@ -100,10 +98,15 @@ fun HeaderInfo(
 fun EmergencyButton(
     viewModel:MainViewModel= hiltViewModel()
 ){
+
+    var showDialog by remember { mutableStateOf(false) }
+    var result by remember { mutableStateOf("Result") }
+    val context = LocalContext.current
+
     CommonVerticalGap16()
     Button(
         onClick = {
-            viewModel.deleteInstantLock()
+            showDialog = true
         },
         colors = ButtonDefaults.textButtonColors(
             containerColor = Color.Red,
@@ -113,6 +116,48 @@ fun EmergencyButton(
         Text(color= Color.White,text = "緊急解除", fontSize = 20.sp, fontWeight = FontWeight.Bold)
     }
 
+    if (showDialog) {
+        AlertDialog(
+            onDismissRequest = {
+                result = "Dismiss"
+                showDialog = false
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        viewModel.tapEmergencyButton(context)
+                        if(viewModel.isEmergencyUnlocked){
+                            result = "OK"
+                            showDialog = false
+                        }
+                    },
+                            colors = ButtonDefaults.textButtonColors(
+                                containerColor = Color.Red,
+                                contentColor = Color.White,
+                            )
+                ) {
+
+                    Text(text = "残り"+(constEmergencyTapNumberRequired-viewModel.emergencyTapNumber).toString()+"回")
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = {
+                        result = "Cancel"
+                        showDialog = false
+                    }
+                ) {
+                    Text("Cancel")
+                }
+            },
+            title = {
+                Text("緊急解除")
+            },
+            text = {
+                    Text("ロック解除のために、"+constEmergencyTapNumberRequired.toString()+"回ボタンをタップしてください")
+            },
+        )
+    }
 }
 
 @Composable

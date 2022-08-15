@@ -4,23 +4,23 @@ import android.app.AlarmManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
-import android.icu.text.SimpleDateFormat
 import android.os.Build
 import android.util.Log
 import androidx.core.content.ContextCompat
+import androidx.core.content.ContextCompat.getSystemService
 import androidx.room.Room
 import com.app.lockapp4.framework.database.AppDatabase
 import com.app.lockapp4.framework.database.InstantLockDao
 import com.app.lockapp4.framework.database.LockTimeDao
-import com.app.lockapp4.framework.utl.AlarmBroadcastReceiver
-import com.app.lockapp4.framework.utl.commonTranslateLongToCalendar
+import com.app.lockapp4.framework.utl.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import timber.log.Timber
 import java.util.*
 
-fun getDatabase(context: Context) :AppDatabase{
+
+fun getDatabase(context: Context): AppDatabase {
     return Room.databaseBuilder(
         context,
         AppDatabase::class.java,
@@ -41,37 +41,26 @@ fun restartApp(context: Context) {
     GlobalScope.launch(Dispatchers.IO) {
         val instantLockDataList = getInstantLockDao(context).getAll()
 
-        if(instantLockDataList.isEmpty()){
-            ifScheduledWakeUp(context)
+        if (instantLockDataList.isEmpty()) {
 
-        }else{
-            val now = Calendar.getInstance()
+            val nextTime = getLockTimeDao(context).getNextToTimeIfScheduledLocking()
 
-            val endTime = commonTranslateLongToCalendar(instantLockDataList[0].startTimeInLong)
-            endTime.add(Calendar.MINUTE,instantLockDataList[0].durationTimeInLong.toInt())
-
-            if(now.before(endTime)){
+            if (nextTime != null) {
+                Timber.d("■■■■■■■■■■■■■■■■■■■ifScheduledWakeUpの中のwakeUpActivity(context)の前")
                 wakeUpActivity(context)
             }else{
-                getInstantLockDao(context).deleteAll()
-                ifScheduledWakeUp(context)
+
+                setRestartPlan(context)
+
             }
+
+        } else {
+            wakeUpActivity(context)
         }
-
     }
 }
 
-fun ifScheduledWakeUp(context: Context){
-
-    val nextTime = getLockTimeDao(context).getNextToTimeIfScheduledLocking()
-
-    if(nextTime!=null){
-        Timber.d("■■■■■■■■■■■■■■■■■■■ifScheduledWakeUpの中のwakeUpActivity(context)の前")
-        wakeUpActivity(context)
-    }
-}
-
-fun wakeUpActivity(context: Context){
+fun wakeUpActivity(context: Context) {
     Timber.d("■■■■■■■■■■■■■■■■■■■wakeUpActivity始まり")
 
     GlobalScope.launch(Dispatchers.Main) {
@@ -83,23 +72,69 @@ fun wakeUpActivity(context: Context){
     }
 }
 
+fun insertDefaultLockTimeData(context:Context) {
+    GlobalScope.launch(Dispatchers.IO) {
+        val lockTimeDao = getLockTimeDao(context)
+        val lockData = lockTimeDao.getAll()
+        if (lockData.isEmpty()) {
+            lockTimeDao.insertAllDefaultData()
+        }
+
+    }
+}
+
+
+fun deleteInstantLockData(context:Context) {
+    GlobalScope.launch(Dispatchers.IO) {
+        val instantLockDao = getInstantLockDao(context)
+        var instantLockList =instantLockDao.getAll()
+        if(instantLockList.isNotEmpty()){
+
+            val now = Calendar.getInstance()
+            val endTime = commonTranslateLongToCalendar(instantLockList[0].startTimeInLong)
+            endTime.add(Calendar.MINUTE,instantLockList[0].durationTimeInLong.toInt())
+
+            if(now!!.after(endTime!!)){
+                instantLockDao.deleteAll()
+            }
+        }
+    }
+}
+
+fun cancelRestartPlan(context: Context) {
+    // アラームの削除
+    val am: AlarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+
+    val intent = Intent(
+        context,
+        RestartReceiver::class.java
+    )
+    val pending: PendingIntent = PendingIntent.getBroadcast(
+        context, alarmManagerRequestCodeRestartScheduler, intent,
+        PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+    )
+
+    pending.cancel()
+    am.cancel(pending)
+}
+
 fun setRestartPlan(context: Context) {
 
     Log.d("■■■■■■■■■■■", "setRestartPlanが呼び出される")
     //明示的なBroadCast
     val intent = Intent(
         context,
-        AlarmBroadcastReceiver::class.java
+        RestartReceiver::class.java
     )
     val pending: PendingIntent = PendingIntent.getBroadcast(
-        context, 0, intent,
+        context, alarmManagerRequestCodeRestartScheduler, intent,
         PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
     )
 
     // アラームをセットする
     val am: AlarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
 
-    GlobalScope.launch(Dispatchers.IO) {
+//    GlobalScope.launch(Dispatchers.IO) {
         val nextLockTime = getLockTimeDao(context).getNextFromTime()
         if (nextLockTime != null) {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
@@ -116,42 +151,59 @@ fun setRestartPlan(context: Context) {
 //                    am.setRepeating(AlarmManager.RTC_WAKEUP,calendar.timeInMillis, 5000,pending)
             }
 
-        }
+//        }
     }
 }
 
+fun cancelDeleteInstantLockSchedule(context: Context) {
+    // アラームの削除
+    val am: AlarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
 
-fun deleteInstantLockSchedule(context: Context) {
+    val intent = Intent(context, DeleteInstantLockReceiver::class.java)
+    val pending = PendingIntent.getBroadcast(
+        context, alarmManagerRequestCodeDeleteScheduler, intent,
+        PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+    )
 
+    pending.cancel()
+    am.cancel(pending)
+}
+
+fun restartForDeleteInstantLockSchedule(context: Context, endTime: Calendar) {
+
+    Timber.d("■■■■■■■■■■■■■■■■deleteInstantLockSchedule開始")
 //    明示的なBroadCast
     val intent = Intent(
         context,
-        AlarmBroadcastReceiver::class.java
+        DeleteInstantLockReceiver::class.java
     )
     val pending: PendingIntent = PendingIntent.getBroadcast(
-        context, 1, intent,
+        context, alarmManagerRequestCodeDeleteScheduler, intent,
         PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
     )
 
     // アラームをセットする
     val am: AlarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
 
-    GlobalScope.launch(Dispatchers.IO) {
-        val nextLockTime = getLockTimeDao(context).getNextFromTime()
-        if (nextLockTime != null) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                Log.d("■■■■■■■■■■■", "★routeA★")
-                am.setExactAndAllowWhileIdle(
-                    AlarmManager.RTC_WAKEUP,
-                    nextLockTime.timeInMillis,
-                    pending
-                )
-//                    am.setRepeating(AlarmManager.RTC_WAKEUP,calendar.timeInMillis+5000, 5000,pending)
-            } else {
-                Log.d("■■■■■■■■■■■", "routeB")
-                am.setExact(AlarmManager.RTC_WAKEUP, nextLockTime.timeInMillis, pending)
-            }
+//    GlobalScope.launch(Dispatchers.IO) {
 
-        }
+//        if (nextLockTime != null) {
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+        am.setExactAndAllowWhileIdle(
+            AlarmManager.RTC_WAKEUP,
+            endTime.timeInMillis,
+            pending
+        )
+
+        Timber.d("■■■■■■■■■■■DeleteScheduled：" + commonTranslateCalendarToStringYYYYMMDDHHMM(endTime))
+//                    am.setRepeating(AlarmManager.RTC_WAKEUP,calendar.timeInMillis+5000, 5000,pending)
+    } else {
+        Log.d("■■■■■■■■■■■", "routeB")
+        am.setExact(AlarmManager.RTC_WAKEUP, endTime.timeInMillis, pending)
     }
+
+//        }
+
+    Timber.d("■■■■■■■■■■■■■■■■deleteInstantLockSchedule終了")
+//    }
 }

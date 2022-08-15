@@ -17,6 +17,7 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.app.lockapp4.framework.utl.requestPermissionCode
 import com.app.lockapp4.ui.MainPage
 import com.app.lockapp4.presentation.theme.LockApp4Theme
 import dagger.hilt.android.AndroidEntryPoint
@@ -32,21 +33,24 @@ class MainActivity : ComponentActivity() {
         requestPermission()
     }
 
+    override fun onStart() {
+        super.onStart()
+        cancelRestartPlan(applicationContext)
+        insertDefaultLockTimeData(applicationContext)
+        deleteInstantLockData(applicationContext)
+    }
+
     override fun onDestroy() {
         Log.d("■■■■■■■■■■■", "onDestroyが呼び出される")
         super.onDestroy()
-        setRestartPlan(applicationContext)
-        restartApp(applicationContext,)
+        restartApp(applicationContext)
     }
 
     override fun onStop() {
         Log.d("■■■■■■■■■■■", "onStopが呼び出される")
         super.onStop()
-        setRestartPlan(applicationContext)
         restartApp(applicationContext)
     }
-
-    private val REQUEST_PERMISSION_CODE = 1
 
     // SYSTEM_ALERT_WINDOWが許可されているかのチェック
     fun isGranted(): Boolean {
@@ -60,13 +64,13 @@ class MainActivity : ComponentActivity() {
         } else {
             val uri: Uri = Uri.parse("package:$packageName")
             val intent: Intent = Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, uri)
-            startActivityForResult(intent, REQUEST_PERMISSION_CODE)
+            startActivityForResult(intent, requestPermissionCode)
         }
     }
 
     // 許可されたかの確認は、onActivityResultでチェックする
     override fun onActivityResult(requestCode: Int, resultCode: Int, @Nullable data: Intent?) {
-        if (requestCode == REQUEST_PERMISSION_CODE) {
+        if (requestCode == requestPermissionCode) {
             if (Settings.canDrawOverlays(this)) {
                 // 許可されたときの処理
             } else {

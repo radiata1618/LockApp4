@@ -28,6 +28,16 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <receiver
+            android:name=".framework.utl.RestartReceiver"
+            android:process=":remote"
+            />
+
+        <receiver
+            android:name=".framework.utl.DeleteInstantLockReceiver"
+            android:process=":remote"
+            />
     </application>
 
 </manifest>

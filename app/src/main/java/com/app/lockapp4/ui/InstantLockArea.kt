@@ -43,7 +43,7 @@ fun InstantLockArea(
             Row(
                 verticalAlignment = Alignment.CenterVertically) {
                 MyNumberField(navController=navController)
-                Text(text = "分")
+                Text(text = "分間")
                 Button(
                     onClick = {
                         viewModel.insertInstantLock(context)

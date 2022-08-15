@@ -40,9 +40,9 @@ fun MainPage(
 
     val context = LocalContext.current
 
-    viewModel.initialProcess()
+//    viewModel.initialProcess()
 
-    Scaffold() {
+    Scaffold {
         var lockTimeList = viewModel.lockTimes.collectAsState(emptyList()).value
         if (lockTimeList.isEmpty()) {
             Text(text = "Preparing")
