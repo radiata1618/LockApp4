@@ -16,7 +16,7 @@ import timber.log.Timber
 import java.time.LocalDateTime
 
 
-class DeleteInstantLockReceiver : BroadcastReceiver() {
+class ReceiverForForeground : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
         Timber.d("■■■■■■■■■■■DeleteInstantLockReceiver起動")
         wakeUpActivity(context)//画面を更新して、その起動処理の中で既存のInstantLockデータを削除

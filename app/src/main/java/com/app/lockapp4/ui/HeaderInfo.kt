@@ -1,9 +1,7 @@
 package com.app.lockapp4.ui
 
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.width
-import androidx.compose.material.MaterialTheme.colors
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.LockOpen
@@ -21,6 +19,7 @@ import com.app.lockapp4.framework.database.MainViewModel
 import com.app.lockapp4.framework.utl.*
 import com.app.lockapp4.judgeNowLockedReturnUnlockTime
 import com.app.lockapp4.presentation.common.CommonVerticalGap16
+import com.app.lockapp4.presentation.common.CommonVerticalGap6
 import java.util.*
 
 
@@ -33,17 +32,22 @@ fun HeaderInfo(
         viewModel.instantLock.collectAsState(emptyList()).value,
         viewModel.nextOrDuringLockTime.collectAsState(emptyList()).value
     )
-
+//
+//    val tmpList = viewModel.nextOrDuringLockTime.collectAsState(emptyList()).value
+//    if(tmpList.isNotEmpty()){
+//        Text(text = "スタート時間"+commonTranslateCalendarToStringYYYYMMDDHHMM(commonTranslateLongToCalendar(tmpList[0].startTimeInLong)))
+//        Text(text = "エンド時間"+commonTranslateCalendarToStringYYYYMMDDHHMM(commonTranslateLongToCalendar(tmpList[0].endTimeInLong)))
+//    }
     if (endTimeCal == null) {
 
-        CommonVerticalGap16()
+        CommonVerticalGap6()
         LockIcon(false)
-        CommonVerticalGap16()
+        CommonVerticalGap6()
     } else {
 
-        CommonVerticalGap16()
+        CommonVerticalGap6()
         LockIcon(true)
-        CommonVerticalGap16()
+        CommonVerticalGap6()
         Text(text = stringIsLocked, fontSize = 36.sp)
         UnlockDateTime(endTimeCal)
         EmergencyButton()
@@ -59,7 +63,7 @@ fun EmergencyButton(
     var result by remember { mutableStateOf("Result") }
     val context = LocalContext.current
 
-    CommonVerticalGap16()
+    CommonVerticalGap6()
     Button(
         onClick = {
             showDialog = true

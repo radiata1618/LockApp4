@@ -21,6 +21,9 @@ import com.app.lockapp4.framework.utl.requestPermissionCode
 import com.app.lockapp4.ui.MainPage
 import com.app.lockapp4.presentation.theme.LockApp4Theme
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -35,21 +38,26 @@ class MainActivity : ComponentActivity() {
 
     override fun onStart() {
         super.onStart()
-        cancelRestartPlan(applicationContext)
-        insertDefaultLockTimeData(applicationContext)
-        deleteInstantLockData(applicationContext)
+
+        GlobalScope.launch(Dispatchers.IO) {
+            cancelRestartPlan(applicationContext)
+            insertDefaultLockTimeData(applicationContext)
+            recalculateNextOrDuringLockTime(applicationContext)
+            deleteInstantLockData(applicationContext)
+            scheduleForDuringForeground(applicationContext)
+        }
     }
 
     override fun onDestroy() {
         Log.d("■■■■■■■■■■■", "onDestroyが呼び出される")
         super.onDestroy()
-        restartApp(applicationContext)
+        restartAppOrScheduleRestart(applicationContext)
     }
 
     override fun onStop() {
         Log.d("■■■■■■■■■■■", "onStopが呼び出される")
         super.onStop()
-        restartApp(applicationContext)
+        restartAppOrScheduleRestart(applicationContext)
     }
 
     // SYSTEM_ALERT_WINDOWが許可されているかのチェック

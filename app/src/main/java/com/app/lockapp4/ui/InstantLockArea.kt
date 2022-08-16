@@ -8,6 +8,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -19,8 +20,10 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.app.lockapp4.framework.database.MainViewModel
+import com.app.lockapp4.judgeNowLockedReturnUnlockTime
 import com.app.lockapp4.presentation.common.CommonVerticalGap16
 import com.app.lockapp4.presentation.common.CommonVerticalGap6
+import java.util.*
 
 @Composable
 fun InstantLockArea(
@@ -29,6 +32,10 @@ fun InstantLockArea(
 ){
 
     val context = LocalContext.current
+    val endTimeCal: Calendar? = judgeNowLockedReturnUnlockTime(
+        viewModel.instantLock.collectAsState(emptyList()).value,
+        viewModel.nextOrDuringLockTime.collectAsState(emptyList()).value
+    )
     Box(modifier = Modifier.padding(4.dp).border(
         width = 0.5.dp,
         color = Color.Gray,
@@ -46,7 +53,9 @@ fun InstantLockArea(
                 Text(text = "分間")
                 Button(
                     onClick = {
-                        viewModel.insertInstantLock(context)
+                        if(endTimeCal==null){
+                            viewModel.insertInstantLock(context)
+                        }
                     },
                 ) {
                     Text(text = "ロック")

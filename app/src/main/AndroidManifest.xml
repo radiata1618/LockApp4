@@ -30,12 +30,12 @@
         </activity>
 
         <receiver
-            android:name=".framework.utl.RestartReceiver"
+            android:name=".framework.utl.ReceiverForBackground"
             android:process=":remote"
             />
 
         <receiver
-            android:name=".framework.utl.DeleteInstantLockReceiver"
+            android:name=".framework.utl.ReceiverForForeground"
             android:process=":remote"
             />
     </application>

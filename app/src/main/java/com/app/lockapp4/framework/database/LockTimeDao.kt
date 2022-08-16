@@ -58,6 +58,8 @@ interface LockTimeDao {
 
                 cal.set(Calendar.HOUR_OF_DAY, lockTimeData.toTimeHour)
                 cal.set(Calendar.MINUTE, lockTimeData.toTimeMinute)
+                cal.set(Calendar.SECOND, 0)
+                cal.set(Calendar.MILLISECOND, 0)
 
                 return NextOrDuringLockTime(
                     0,
@@ -83,6 +85,8 @@ interface LockTimeDao {
             if (lockTimeData.enableLock) {
                 cal.set(Calendar.HOUR_OF_DAY, lockTimeData.toTimeHour)
                 cal.set(Calendar.MINUTE, lockTimeData.toTimeMinute)
+                cal.set(Calendar.SECOND, 0)
+                cal.set(Calendar.MILLISECOND, 0)
 
                 return NextOrDuringLockTime(
                     0,
@@ -103,6 +107,8 @@ interface LockTimeDao {
         cal.set(Calendar.DATE, baseCal.get(Calendar.DATE))
         cal.set(Calendar.HOUR_OF_DAY, hour)
         cal.set(Calendar.MINUTE, minute)
+        cal.set(Calendar.SECOND, 0)
+        cal.set(Calendar.MILLISECOND, 0)
         if (cal.after(baseCal)) {
             cal.add(Calendar.DATE, -1)
         }

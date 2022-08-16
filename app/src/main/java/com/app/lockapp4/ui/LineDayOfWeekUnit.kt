@@ -11,6 +11,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -24,12 +25,14 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.app.lockapp4.framework.database.LockTime
 import com.app.lockapp4.framework.database.MainViewModel
 import com.app.lockapp4.framework.utl.commonTranslateTimeIntToString
+import com.app.lockapp4.judgeNowLockedReturnUnlockTime
 import com.app.lockapp4.presentation.theme.CommonColorSecondary
 import com.app.lockapp4.presentation.theme.CommonColorTertiary
 import com.app.lockapp4.presentation.theme.DayColorList
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import java.util.*
 
 
 @Composable
@@ -39,6 +42,10 @@ fun LineDayOfWeekUnit(
 ) {
 
     val context = LocalContext.current
+    val endTimeCal: Calendar? = judgeNowLockedReturnUnlockTime(
+        viewModel.instantLock.collectAsState(emptyList()).value,
+        viewModel.nextOrDuringLockTime.collectAsState(emptyList()).value
+    )
 
     Surface(
         modifier = Modifier.padding(all = 5.dp)
@@ -68,14 +75,16 @@ fun LineDayOfWeekUnit(
             Text(
                 modifier = Modifier.clickable {
 
-                    val fromTimePickerDialog = TimePickerDialog(
-                        context,
-                        { _, mHour: Int, mMinute: Int ->
-                            viewModel.updateFromTime(lockTimeData.dayId, mHour, mMinute)
-                        },
-                        lockTimeData.fromTimeHour, lockTimeData.fromTimeMinute, false
-                    )
-                    fromTimePickerDialog.show()
+                    if(endTimeCal==null){
+                        val fromTimePickerDialog = TimePickerDialog(
+                            context,
+                            { _, mHour: Int, mMinute: Int ->
+                                viewModel.updateFromTime(context,lockTimeData.dayId, mHour, mMinute)
+                            },
+                            lockTimeData.fromTimeHour, lockTimeData.fromTimeMinute, false
+                        )
+                        fromTimePickerDialog.show()
+                    }
                 },
                 text = commonTranslateTimeIntToString(
                     if (lockTimeData.fromTimeHour < 12) {
@@ -91,14 +100,16 @@ fun LineDayOfWeekUnit(
             Text(
                 modifier = Modifier.clickable {
                     // Creating a TimePicker dialod
-                    val toTimePickerDialog = TimePickerDialog(
-                        context,
-                        { _, mHour: Int, mMinute: Int ->
-                            viewModel.updateToTime(lockTimeData.dayId, mHour, mMinute)
-                        },
-                        lockTimeData.toTimeHour, lockTimeData.toTimeMinute, false
-                    )
-                    toTimePickerDialog.show()
+                    if(endTimeCal==null) {
+                        val toTimePickerDialog = TimePickerDialog(
+                            context,
+                            { _, mHour: Int, mMinute: Int ->
+                                viewModel.updateToTime(context, lockTimeData.dayId, mHour, mMinute)
+                            },
+                            lockTimeData.toTimeHour, lockTimeData.toTimeMinute, false
+                        )
+                        toTimePickerDialog.show()
+                    }
                 },
                 text = commonTranslateTimeIntToString(
                     lockTimeData.toTimeHour,
@@ -117,6 +128,10 @@ fun DayOfWeekButtonUnit(
     viewModel: MainViewModel = hiltViewModel()
 ) {
     val context = LocalContext.current
+    val endTimeCal: Calendar? = judgeNowLockedReturnUnlockTime(
+        viewModel.instantLock.collectAsState(emptyList()).value,
+        viewModel.nextOrDuringLockTime.collectAsState(emptyList()).value
+    )
 
     Surface(
         modifier = Modifier
@@ -124,7 +139,9 @@ fun DayOfWeekButtonUnit(
             .toggleable(
                 value = lockTime.enableLock,
                 onValueChange = {
-                    viewModel.updateEnable(lockTime)
+                    if(endTimeCal==null){
+                        viewModel.updateEnable(context,lockTime)
+                    }
                 }
             ),
         shape = CircleShape,

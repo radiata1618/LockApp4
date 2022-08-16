@@ -12,7 +12,7 @@ import timber.log.Timber
 import java.time.LocalDateTime
 
 
-class RestartReceiver : BroadcastReceiver() {
+class ReceiverForBackground : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
         // toast で受け取りを確認
         Timber.d("■■■■■■■■■■■RestartReceiver起動")

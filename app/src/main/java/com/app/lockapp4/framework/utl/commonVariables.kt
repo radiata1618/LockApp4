@@ -11,5 +11,5 @@ const val requestPermissionCode = 1
 
 const val constEmergencyTapNumberRequired = 10
 
-const val alarmManagerRequestCodeRestartScheduler =0
-const val alarmManagerRequestCodeDeleteScheduler =1
+const val scheduleForDuringBackground =0
+const val scheduleForDuringForeground =1
