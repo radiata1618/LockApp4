@@ -75,7 +75,7 @@ fun LineDayOfWeekUnit(
             Text(
                 modifier = Modifier.clickable {
 
-                    if(endTimeCal==null){
+                    if(endTimeCal==null || viewModel.isEmergencyUnlocked){
                         val fromTimePickerDialog = TimePickerDialog(
                             context,
                             { _, mHour: Int, mMinute: Int ->
@@ -100,7 +100,7 @@ fun LineDayOfWeekUnit(
             Text(
                 modifier = Modifier.clickable {
                     // Creating a TimePicker dialod
-                    if(endTimeCal==null) {
+                    if(endTimeCal==null || viewModel.isEmergencyUnlocked) {
                         val toTimePickerDialog = TimePickerDialog(
                             context,
                             { _, mHour: Int, mMinute: Int ->
@@ -139,7 +139,7 @@ fun DayOfWeekButtonUnit(
             .toggleable(
                 value = lockTime.enableLock,
                 onValueChange = {
-                    if(endTimeCal==null){
+                    if(endTimeCal==null || viewModel.isEmergencyUnlocked){
                         viewModel.updateEnable(context,lockTime)
                     }
                 }

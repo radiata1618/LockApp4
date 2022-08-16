@@ -129,15 +129,13 @@ fun wakeUpActivity(context: Context) {
 
 fun insertDefaultLockTimeData(context:Context) {
     Timber.d("■■■■■■■■■■■■■■■■■■■insertDefaultLockTimeData開始")
-    GlobalScope.launch(Dispatchers.IO) {
         val lockTimeDao = getLockTimeDao(context)
         val lockData = lockTimeDao.getAll()
         if (lockData.isEmpty()) {
             lockTimeDao.insertAllDefaultData()
-        }
+}
 
         Timber.d("■■■■■■■■■■■■■■■■■■■insertDefaultLockTimeData終了")
-    }
 }
 
 
