@@ -8,7 +8,6 @@ import androidx.lifecycle.ViewModel
 import com.app.lockapp4.cancelDeleteInstantLockSchedule
 import com.app.lockapp4.restartForDeleteInstantLockSchedule
 import com.app.lockapp4.framework.utl.commonTranslateCalendarToStringYYYYMMDDHHMM
-import com.app.lockapp4.framework.utl.commonTranslateLongToCalendar
 import com.app.lockapp4.framework.utl.constEmergencyTapNumberRequired
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
@@ -22,29 +21,27 @@ import javax.inject.Inject
 class MainViewModel @Inject constructor(
     lockTimeDao: LockTimeDao,
     instantLockDao: InstantLockDao,
-//    nextOrDuringLockTimeDao: NextOrDuringLockTimeDao,
+    nextOrDuringLockTimeDao: NextOrDuringLockTimeDao,
 ) : ViewModel() {
 
     var lockTimes = lockTimeDao.getAllFlow()
     var instantLock = instantLockDao.getAllFlow()
-//    var nextOrDuringLockTime = nextOrDuringLockTimeDao.getAllFlow()
+    var nextOrDuringLockTime = nextOrDuringLockTimeDao.getAllFlow()
 
     var isEmergencyUnlocked by mutableStateOf(false)
-    var emergencyTapNumber by  mutableStateOf(0)
-    var isLockedByScheduling by mutableStateOf(false)
-    var unLockedTimeBySchedulingInLong by mutableStateOf(0L)
+    var emergencyTapNumber by mutableStateOf(0)
     var instantLockTimeOnScreenMinuteInInt by mutableStateOf(1)
 
     private var lockTimeDaoForUse = lockTimeDao
     private var instantLockDaoForUse = instantLockDao
-//    private var nextOrDuringLockTimeDaoForUse = nextOrDuringLockTimeDao
+    private var nextOrDuringLockTimeDaoForUse = nextOrDuringLockTimeDao
 
-    fun tapEmergencyButton(context: Context){
+    fun tapEmergencyButton(context: Context) {
         emergencyTapNumber += 1
-        if(emergencyTapNumber==constEmergencyTapNumberRequired){
+        if (emergencyTapNumber == constEmergencyTapNumberRequired) {
             deleteInstantLock()
-            isEmergencyUnlocked=true
-            emergencyTapNumber=0
+            isEmergencyUnlocked = true
+            emergencyTapNumber = 0
             cancelDeleteInstantLockSchedule(context)
         }
     }
@@ -53,7 +50,7 @@ class MainViewModel @Inject constructor(
     fun updateEnable(lockTime: LockTime): Boolean {
         GlobalScope.launch(Dispatchers.IO) {
             lockTimeDaoForUse.updateEnable(lockTime)
-            getNextToTimeIfScheduledLocking()
+            recalculateNextOrDuringLockTime()
         }
         return true
     }
@@ -62,7 +59,7 @@ class MainViewModel @Inject constructor(
         val now = Calendar.getInstance()
 
         Timber.d("■■■■■■■■■■■insertInstantLock開始")
-        Timber.d("■■■■■■■■■■■now:"+commonTranslateCalendarToStringYYYYMMDDHHMM(now))
+        Timber.d("■■■■■■■■■■■now:" + commonTranslateCalendarToStringYYYYMMDDHHMM(now))
 
 
         GlobalScope.launch(Dispatchers.IO) {
@@ -79,8 +76,8 @@ class MainViewModel @Inject constructor(
         endTime.timeInMillis = now.timeInMillis
         endTime.add(Calendar.MINUTE, instantLockTimeOnScreenMinuteInInt)
 
-        Timber.d("■■■■■■■■■■■"+commonTranslateCalendarToStringYYYYMMDDHHMM(endTime))
-        restartForDeleteInstantLockSchedule(context,endTime)
+        Timber.d("■■■■■■■■■■■" + commonTranslateCalendarToStringYYYYMMDDHHMM(endTime))
+        restartForDeleteInstantLockSchedule(context, endTime)
 
     }
 
@@ -93,44 +90,57 @@ class MainViewModel @Inject constructor(
     fun updateToTime(dayId: Int, mHour: Int, mMinute: Int) {
         GlobalScope.launch(Dispatchers.IO) {
             lockTimeDaoForUse.updateToTime(dayId, mHour, mMinute)
-            getNextToTimeIfScheduledLocking()
+            recalculateNextOrDuringLockTime()
         }
     }
 
     fun updateFromTime(dayId: Int, mHour: Int, mMinute: Int) {
         GlobalScope.launch(Dispatchers.IO) {
             lockTimeDaoForUse.updateFromTime(dayId, mHour, mMinute)
-            getNextToTimeIfScheduledLocking()
+            recalculateNextOrDuringLockTime()
         }
     }
 
-    private fun getNextToTimeIfScheduledLocking() {
+    private fun recalculateNextOrDuringLockTime() {
 
-        val unlockedTime = lockTimeDaoForUse.getNextToTimeIfScheduledLocking()
+        val newNextOrDuringScheduleLockTime = lockTimeDaoForUse.getNextOrDuringScheduleLockTime()
+        val nextOrDuringLockTimeList = nextOrDuringLockTimeDaoForUse.getAll()
 
-        GlobalScope.launch(Dispatchers.Main) {
-            Timber.d("■■■■■■■■■■■■■■■■■■■■■■■■■■■getNextToTimeIfScheduledLocking はじめ")
+//        GlobalScope.launch(Dispatchers.Main) {
+        Timber.d("■■■■■■■■■■■■■■■■■■■■■■■■■■■getNextToTimeIfScheduledLocking はじめ")
 
-            if (unlockedTime != null) {
-                Timber.d("■■■■■■■■■■■■■■■■■■■■■■■■■■■NextTime:"+commonTranslateCalendarToStringYYYYMMDDHHMM(commonTranslateLongToCalendar(unlockedTime!!.timeInMillis)))
-                val fromDBTimeInLong=unlockedTime!!.timeInMillis
-                if (fromDBTimeInLong != unLockedTimeBySchedulingInLong) {
-                    Timber.d("■■■■■■■■■■■■■■■■■■■■■■■■■■■isScheduledLockedCompanionをTrueにする")
-                    unLockedTimeBySchedulingInLong = fromDBTimeInLong
-                    isLockedByScheduling = true
-                }
+        if (newNextOrDuringScheduleLockTime != null) {
+            //今最新状況でデータ投入すべきはず
 
-                Timber.d("■■■■■■■■■■■■■■■■■■■■■■■■■■■isLockedByScheduling:"+isLockedByScheduling.toString())
+            if (nextOrDuringLockTimeList.isEmpty()) {
+                //今最新状況でロックの最中かつ、もともとデータなかった
+                nextOrDuringLockTimeDaoForUse.insert(newNextOrDuringScheduleLockTime)
+
             } else {
-                Timber.d("■■■■■■■■■■■■■■■■■■■■■■■■■■■NextTime:NULL")
-                if (unLockedTimeBySchedulingInLong != 0L) {
-                    Timber.d("■■■■■■■■■■■■■■■■■■■■■■■■■■■isScheduledLockedCompanionをfalseにする")
-                    unLockedTimeBySchedulingInLong = 0L
-                    isLockedByScheduling = false
+                //今最新状況でロックの最中かつ、もともとロック中だった
+                if(nextOrDuringLockTimeList[0].endTimeInLong==newNextOrDuringScheduleLockTime.endTimeInLong
+                    &&nextOrDuringLockTimeList[0].startTimeInLong==newNextOrDuringScheduleLockTime.startTimeInLong){
+                    //データが変わっていないので処理無し
+                }else{
+                    nextOrDuringLockTimeDaoForUse.update(newNextOrDuringScheduleLockTime)
                 }
 
-                Timber.d("■■■■■■■■■■■■■■■■■■■■■■■■■■■isLockedByScheduling:"+isLockedByScheduling.toString())
+            }
+
+        } else {
+            //今最新状況でロックの最中ではない
+            if (nextOrDuringLockTimeList.isEmpty()) {
+                //今最新状況でロックの最中ではない、もともとロック中じゃなかった
+
+                //処理無し
+
+            } else {
+                //今最新状況でロックの最中ではない、もともとロック中だった
+                nextOrDuringLockTimeDaoForUse.deleteAll()
+
             }
         }
+
     }
+
 }

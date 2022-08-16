@@ -31,6 +31,10 @@ fun HeaderInfo(
     var isLockedInstantly=false
     var endTimeLockedInstantly:Calendar?=null
 
+    var isLockedScheduled=false
+    var endTimeLockedScheduled:Calendar?=null
+
+
     val instantLockList = viewModel.instantLock.collectAsState(emptyList()).value
 
     if(instantLockList.isEmpty()){
@@ -51,10 +55,27 @@ fun HeaderInfo(
 
     }
 
+    val nextOrDuringLockTimeList = viewModel.nextOrDuringLockTime.collectAsState(emptyList()).value
+
+    if(nextOrDuringLockTimeList.isEmpty()){
+        isLockedScheduled=false
+
+    }else{
+
+        if(commonTranslateLongToCalendar(nextOrDuringLockTimeList[0].startTimeInLong).after((Calendar.getInstance()))){
+
+            isLockedScheduled=false
+        }else{
+
+            isLockedScheduled=true
+            endTimeLockedScheduled=commonTranslateLongToCalendar(nextOrDuringLockTimeList[0].endTimeInLong)
+        }
+
+    }
 
     CommonVerticalGap16()
     //スケジュールロック中かどうか、インスタントロック中かどうかの2パターン×2の4パターンで場合分け
-    if (viewModel.isLockedByScheduling) {
+    if (isLockedScheduled) {
 
         LockIcon(true)
         CommonVerticalGap16()
@@ -63,16 +84,16 @@ fun HeaderInfo(
         //解除時間の判定
         if(isLockedInstantly){
             //スケジュールロックされているかつ、インスタントロックされている場合の解除時間
-            //日時を比べて先の方の時間を表示
-            if(commonTranslateLongToCalendar(viewModel.unLockedTimeBySchedulingInLong).before(endTimeLockedInstantly)){
+            //日時を比べて後の方の時間を表示
+            if(endTimeLockedScheduled!!.before(endTimeLockedInstantly)){
                 UnlockDateTime(endTimeLockedInstantly!!)
             }else{
-                UnlockDateTime(commonTranslateLongToCalendar(viewModel.unLockedTimeBySchedulingInLong))
+                UnlockDateTime(endTimeLockedScheduled)
             }
 
         }else{
             //スケジュールロックされているかつ、インスタントロックされていない場合の解除時間
-            UnlockDateTime(commonTranslateLongToCalendar(viewModel.unLockedTimeBySchedulingInLong))
+            UnlockDateTime(endTimeLockedScheduled!!)
         }
         EmergencyButton()
     } else {
@@ -82,7 +103,7 @@ fun HeaderInfo(
 
             LockIcon(true)
             Text(text = stringIsLocked, fontSize = 36.sp)
-            Text(text = "解除日時：${commonTranslateCalendarToStringYYYYMMDDHHMM(endTimeLockedInstantly!!)}")
+            UnlockDateTime(endTimeLockedInstantly!!)
             EmergencyButton()
 
             //ロックしていないパターン

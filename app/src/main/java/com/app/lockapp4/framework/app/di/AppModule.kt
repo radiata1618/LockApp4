@@ -9,6 +9,7 @@ import androidx.room.Room
 import com.app.lockapp4.framework.database.LockTimeDao
 import com.app.lockapp4.framework.database.AppDatabase
 import com.app.lockapp4.framework.database.InstantLockDao
+import com.app.lockapp4.framework.database.NextOrDuringLockTimeDao
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -48,5 +49,11 @@ object AppModule {
     @Singleton
     fun provideInstantLockDao(database: AppDatabase): InstantLockDao {
         return database.instantLockDatabaseDao
+    }
+
+    @Provides
+    @Singleton
+    fun provideNextOrDuringLockTimeDao(database: AppDatabase): NextOrDuringLockTimeDao {
+        return database.nextOrDuringLockTimeDatabaseDao
     }
 }
