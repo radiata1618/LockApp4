@@ -6,10 +6,7 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.room.Room
-import com.app.lockapp4.framework.database.LockTimeDao
-import com.app.lockapp4.framework.database.AppDatabase
-import com.app.lockapp4.framework.database.InstantLockDao
-import com.app.lockapp4.framework.database.NextOrDuringLockTimeDao
+import com.app.lockapp4.framework.database.*
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -36,7 +33,10 @@ object AppModule {
             app,
             AppDatabase::class.java,
             "mainDatabase"
-        ).build()
+        ).apply {
+            allowMainThreadQueries()
+            addMigrations(MIGRATION_1_2)
+        }.build()
     }
 
     @Provides
@@ -55,5 +55,11 @@ object AppModule {
     @Singleton
     fun provideNextOrDuringLockTimeDao(database: AppDatabase): NextOrDuringLockTimeDao {
         return database.nextOrDuringLockTimeDatabaseDao
+    }
+
+    @Provides
+    @Singleton
+    fun provideStatusOnScreenDao(database: AppDatabase): StatusOnScreenDao {
+        return database.statusOnScreenDao
     }
 }

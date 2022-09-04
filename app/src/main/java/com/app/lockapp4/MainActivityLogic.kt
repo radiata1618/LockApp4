@@ -23,7 +23,15 @@ fun getDatabase(context: Context): AppDatabase {
         context,
         AppDatabase::class.java,
         "mainDatabase"
-    ).build()
+    ).apply {
+        allowMainThreadQueries()
+        addMigrations(MIGRATION_1_2)
+    }.build()
+}
+
+fun getStatusOnScreenDao(context: Context): StatusOnScreenDao {
+    Timber.d("■■■■■■■■■■■getStatusOnScreenDao開始")
+    return getDatabase(context).statusOnScreenDao
 }
 
 fun getLockTimeDao(context: Context): LockTimeDao {
@@ -134,6 +142,11 @@ fun insertDefaultLockTimeData(context:Context) {
         if (lockData.isEmpty()) {
             lockTimeDao.insertAllDefaultData()
 }
+    val satusOnScreenDao = getStatusOnScreenDao(context)
+    val satusOnScreen = satusOnScreenDao.getAll()
+    if (satusOnScreen.isEmpty()) {
+        satusOnScreenDao.insert(StatusOnScreen(0,false))
+    }
 
         Timber.d("■■■■■■■■■■■■■■■■■■■insertDefaultLockTimeData終了")
 }
@@ -319,23 +332,6 @@ fun recalculateNextOrDuringLockTime(context: Context) {
             nextOrDuringLockTimeDao.insert(newNextOrDuringScheduleLockTime)
 
         } else {
-            //今最新状況でロックの最中かつ、もともとロック中だった
-//
-//            Timber.d("★★★★★★★★★★★★★ジャッジ情報★★★★★★★★★★★★★")
-//
-//            Timber.d("■■■■■■■■■■■■■■■■■■■■■■■■■■■oldNextOrDuringScheduleLockTime:エンドタイム："+ commonTranslateCalendarToStringYYYYMMDDHHMM(
-//                commonTranslateLongToCalendar(nextOrDuringLockTimeList[0].endTimeInLong)))
-//            Timber.d(nextOrDuringLockTimeList[0].endTimeInLong.toString())
-//            Timber.d("■■■■■■■■■■■■■■■■■■■■■■■■■■■newNextOrDuringScheduleLockTime:エンドタイム："+ commonTranslateCalendarToStringYYYYMMDDHHMM(
-//                commonTranslateLongToCalendar(newNextOrDuringScheduleLockTime.endTimeInLong)))
-//            Timber.d(newNextOrDuringScheduleLockTime.endTimeInLong.toString())
-//
-//            Timber.d("■■■■■■■■■■■■■■■■■■■■■■■■■■■oldNextOrDuringScheduleLockTime:スタートタイム："+ commonTranslateCalendarToStringYYYYMMDDHHMM(
-//                commonTranslateLongToCalendar(nextOrDuringLockTimeList[0].startTimeInLong)))
-//            Timber.d(nextOrDuringLockTimeList[0].startTimeInLong.toString())
-//            Timber.d("■■■■■■■■■■■■■■■■■■■■■■■■■■■newNextOrDuringScheduleLockTime:スタートタイム："+ commonTranslateCalendarToStringYYYYMMDDHHMM(
-//                commonTranslateLongToCalendar(newNextOrDuringScheduleLockTime.startTimeInLong)))
-//            Timber.d(newNextOrDuringScheduleLockTime.startTimeInLong.toString())
 
             if(nextOrDuringLockTimeList[0].endTimeInLong==newNextOrDuringScheduleLockTime.endTimeInLong
                 &&nextOrDuringLockTimeList[0].startTimeInLong==newNextOrDuringScheduleLockTime.startTimeInLong){

@@ -22,6 +22,7 @@ class MainViewModel @Inject constructor(
     lockTimeDao: LockTimeDao,
     instantLockDao: InstantLockDao,
     nextOrDuringLockTimeDao: NextOrDuringLockTimeDao,
+    statusOnScreenDao: StatusOnScreenDao
 ) : ViewModel() {
 
     var lockTimes = lockTimeDao.getAllFlow()
@@ -35,6 +36,7 @@ class MainViewModel @Inject constructor(
     private var lockTimeDaoForUse = lockTimeDao
     private var instantLockDaoForUse = instantLockDao
     private var nextOrDuringLockTimeDaoForUse = nextOrDuringLockTimeDao
+    private var statusOnScreenDaoForUse = statusOnScreenDao
 
     fun tapEmergencyButton(context: Context) {
         Timber.d("■■■■■■■■■■■tapEmergencyButton開始")
@@ -46,6 +48,10 @@ class MainViewModel @Inject constructor(
             cancelScheduleForDuringForeground(context)
         }
         Timber.d("■■■■■■■■■■■tapEmergencyButton終了")
+    }
+
+    fun resetStatusOnScreenOnDB(){
+
     }
 
     fun insertInstantLock(context: Context) {
